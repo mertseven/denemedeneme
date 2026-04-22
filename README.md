@@ -1,3 +1,0 @@
-# denemedeneme
-merhaba
-hi, world!
