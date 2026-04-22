@@ -257,7 +257,13 @@
     </div>
 
     <script>
-        coyId('generateBtn');
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const tempInput = document.getElementById('temperature');
+        const conditionSelect = document.getElementById('condition');
+        const generateBtn = document.getElementById('generateBtn');
         const resultsArea = document.getElementById('resultsArea');
         const clothingResult = document.getElementById('clothingResult');
         const activityResult = document.getElementById('activityResult');
