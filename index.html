@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Conditions Recommendation App</title>
+    <style>
+        :root {
+            /* Light Mode Variables */
+            --bg-color: #f8fafc;
+            --container-bg: #ffffff;
+            --primary-color: #0f172a;
+            --accent-color: #3b82f6;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --input-bg: #ffffff;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #020617;
+            --container-bg: #0f172a;
+            --primary-color: #f8fafc;
+            --accent-color: #60a5fa;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+            --input-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding-right: 40px; /* Space for toggle */
+            color: var(--primary-color);
+            letter-spacing: -0.025em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-main);
+            background-color: var(--input-bg);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        #generateBtn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        #generateBtn:hover {
+            filter: brightness(1.1);
+        }
+
+        #generateBtn:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .alert-box {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            color: var(--accent-color);
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="container">
+        <button id="themeToggle" class="theme-toggle" title="Toggle Dark Mode">
+            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg id="sunIcon" style="display:none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+
+        <h1>Weather Conditions</h1>
+        
+        <div class="form-group">
+            <label for="temperature">Temperature (°C)</label>
+            <input type="number" id="temperature" placeholder="Enter degrees..." step="0.1">
+        </div>
+
+        <div class="form-group">
+            <label for="condition">Sky Condition</label>
+            <select id="condition">
+                <option value="N">Sunny (N)</option>
+                <option value="L">Cloudy (L)</option>
+                <option value="S">Stormy (S)</option>
+                <option value="R">Rainy (R)</option>
+            </select>
+        </div>
+
+        <button id="generateBtn">Generate Recommendations</button>
+
+        <div id="resultsArea" class="results">
+            <div class="result-item">
+                <p class="result-label">Clothing Recommendation</p>
+                <p id="clothingResult" class="result-value">-</p>
+            </div>
+            
+            <div class="result-item">
+                <p class="result-label">Activity Suggestion</p>
+                <p id="activityResult" class="result-value">-</p>
+            </div>
+
+            <div id="specialAlert" class="alert-box">
+                <strong>Sun Protection Required:</strong> Please emphasize sunscreen and hydration precautions today.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const tempInput = document.getElementById('temperature');
+        const conditionSelect = document.getElementById('condition');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsArea = document.getElementById('resultsArea');
+        const clothingResult = document.getElementById('clothingResult');
+        const activityResult = document.getElementById('activityResult');
+        const specialAlert = document.getElementById('specialAlert');
+
+        // Theme Management
+        function toggleTheme() {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        function setTheme(theme) {
+            body.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+            localStorage.setItem('weather-app-theme', theme);
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('weather-app-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else if (systemPrefersDark) {
+            setTheme('dark');
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Core App Logic (Strictly following provided specifications)
+        generateBtn.addEventListener('click', () => {
+            const tempVal = tempInput.value;
+            
+            if (tempVal === "") {
+                tempInput.style.borderColor = "#ef4444";
+                return;
+            } else {
+                tempInput.style.borderColor = "var(--border-color)";
+            }
+
+            const temperature = parseFloat(tempVal);
+            const condition = conditionSelect.value;
+
+            // 1. Clothing Logic (Temperature-based)
+            let baseClothing = "";
+            if (temperature < 15) {
+                baseClothing = "Warm clothes, jacket, boots";
+            } else if (temperature >= 15 && temperature <= 25) {
+                baseClothing = "Light jacket or sweater";
+            } else {
+                baseClothing = "Light clothes and sun protection";
+            }
+
+            // 2. Clothing Logic (Condition-specific additions)
+            let specificAdditions = [];
+            if (condition === 'N') { // Sunny [N]
+                specificAdditions.push("sunglasses and sunscreen");
+            } else if (condition === 'R') { // Rainy [R]
+                specificAdditions.push("umbrella and waterproof shoes");
+            }
+
+            let finalClothing = baseClothing;
+            if (specificAdditions.length > 0) {
+                finalClothing += " (Add " + specificAdditions.join(", ") + ")";
+            }
+
+            // 3. Activity Logic
+            let activity = "";
+            if (temperature < 15) {
+                activity = "Indoor activities";
+            } else if (temperature >= 15 && temperature <= 25) {
+                activity = "Outdoor activities";
+            } else {
+                activity = "Stay hydrated and seek shade";
+            }
+
+            // 4. Special Logic: Sunny AND Temp > 25
+            if (condition === 'N' && temperature > 25) {
+                specialAlert.style.display = "block";
+            } else {
+                specialAlert.style.display = "none";
+            }
+
+            // Update UI
+            clothingResult.textContent = finalClothing;
+            activityResult.textContent = activity;
+            resultsArea.classList.add('active');
+        });
+    </script>
+</body>
+</html>
